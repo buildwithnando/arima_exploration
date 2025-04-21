@@ -1,9 +1,8 @@
-
 # ARIMA Models Exploration (AirPassengers Dataset)
 
-This project demonstrates time series forecasting using the ARIMA model from first principles, including differencing, stationarity checks, and backtesting.
+This project demonstrates time series forecasting using the ARIMA model, including differencing, stationarity checks, and backtesting.
 
-We use the classic `AirPassengers` dataset which records monthly totals of international airline passengers from 1949 to 1960.
+We use the classic `AirPassengers` dataset, which records monthly totals of international airline passengers from 1949 to 1960.
 
 ---
 
@@ -11,25 +10,26 @@ We use the classic `AirPassengers` dataset which records monthly totals of inter
 
 ### 1. Stationarity
 
-A time series is *stationary* if its properties (mean, variance, autocorrelation) do not change over time. Many time series models assume stationarity. To test this, we use the **Augmented Dickey-Fuller (ADF)** test.
+A time series is **stationary** if its statistical properties (mean, variance, autocorrelation) do not change over time. Many time series models assume stationarity. We test this with the **Augmented Dickey-Fuller (ADF)** test.
 
 #### ADF Test Hypotheses
 
 We test the model:
 
-$$
-\Delta y_t = \alpha + \beta t + \gamma y_{t-1} + \delta_1 \Delta y_{t-1} + \dots + \delta_p \Delta y_{t-p} + \epsilon_t
-$$
+```
+Δyₜ = α + βt + γyₜ₋₁ + δ₁Δyₜ₋₁ + ... + δₚΔyₜ₋ₚ + εₜ
+```
 
 Where:
 
-- $ \Delta y_t = y_t - y_{t-1} $
-- Null Hypothesis $ H_0 $: Series has a **unit root** (non-stationary)
-- Alternative $H_1 $: Series is stationary
+- `Δyₜ = yₜ - yₜ₋₁`
+- Null Hypothesis **H₀**: Series has a **unit root** (non-stationary)
+- Alternative Hypothesis **H₁**: Series is stationary
 
-We check the **p-value** to determine stationarity:
-- If \( p < 0.05 \), reject $ H_0 $: Series is likely stationary
-- If \( p >= 0.05 \), fail to reject $ H_0 $: Series is non-stationary
+We interpret the **p-value**:
+
+- If `p < 0.05`, reject **H₀** → likely stationary  
+- If `p >= 0.05`, fail to reject **H₀** → likely non-stationary
 
 ---
 
@@ -37,11 +37,13 @@ We check the **p-value** to determine stationarity:
 
 Differencing transforms a non-stationary series into a stationary one by removing trends:
 
-$$
-y'_t = y_t - y_{t-1}
-$$
+```
+y′ₜ = yₜ - yₜ₋₁
+```
 
-This is the **integrated** part of ARIMA (the 'I'). We manually compute this with a loop:
+This represents the **Integrated** part of ARIMA (the "I").
+
+We compute it manually like so:
 
 ```python
 def compute_difference(ts):
@@ -55,40 +57,39 @@ def compute_difference(ts):
 
 ### 3. ARIMA Model
 
-The **ARIMA** model is composed of:
+The **ARIMA** model consists of three components:
 
-- **AR (AutoRegressive)**: uses past values  
-  $$
-  y_t = \phi_1 y_{t-1} + \phi_2 y_{t-2} + \dots + \phi_p y_{t-p} + \epsilon_t
-  $$
+- **AR (AutoRegressive)**: Uses past values  
+  ```
+  yₜ = φ₁yₜ₋₁ + φ₂yₜ₋₂ + ... + φₚyₜ₋ₚ + εₜ
+  ```
 
-- **I (Integrated)**: differencing to make data stationary  
-  $$
-  y'_t = y_t - y_{t-1}
-  $$
+- **I (Integrated)**: Applies differencing to achieve stationarity  
+  ```
+  y′ₜ = yₜ - yₜ₋₁
+  ```
 
-- **MA (Moving Average)**: uses past forecast errors  
-  $$
-  y_t = \epsilon_t + \theta_1 \epsilon_{t-1} + \theta_2 \epsilon_{t-2} + \dots + \theta_q \epsilon_{t-q}
-  $$
+- **MA (Moving Average)**: Uses past forecast errors  
+  ```
+  yₜ = εₜ + θ₁εₜ₋₁ + θ₂εₜ₋₂ + ... + θ_qεₜ₋q
+  ```
 
-Combined ARIMA(p,d,q):
+Combined, the model is referred to as:
 
-$$
-\text{ARIMA}(p,d,q): \text{AutoRegressive order } p,\ \text{Differencing order } d,\ \text{Moving Average order } q
-$$
+> **ARIMA(p, d, q)**  
+> where `p` = AR order, `d` = differencing order, `q` = MA order
 
 ---
 
 ### 4. Forecast Recovery
 
-Since we model on differenced data, we reverse differencing to get back to the original scale:
+Since we model on differenced data, we reverse differencing to return to the original scale:
 
-$$
-\hat{y}_t = \hat{y}'_t + y_{t-1}
-$$
+```
+ŷₜ = ŷ′ₜ + yₜ₋₁
+```
 
-We use cumulative sum:
+In code, this is done via cumulative summation:
 
 ```python
 np.cumsum(forecast_diff) + last_train_value
@@ -98,24 +99,26 @@ np.cumsum(forecast_diff) + last_train_value
 
 ### 5. Model Evaluation
 
-We evaluate using **Root Mean Square Error (RMSE)**:
+We evaluate model performance using **Root Mean Square Error (RMSE)**:
 
-$$
-\text{RMSE} = \sqrt{ \frac{1}{n} \sum_{i=1}^{n} (y_i - \hat{y}_i)^2 }
-$$
+```
+RMSE = sqrt( (1/n) * Σ (yᵢ - ŷᵢ)² )
+```
 
-Lower RMSE indicates better model fit on the test set.
+Lower RMSE indicates better model performance on the test set.
 
 ---
 
 ## Results Summary
 
-**AR model** surprisingly performed the best on this dataset, RMSE wise and MAE wise. 
+The **AR model** surprisingly performed the best on this dataset, both in terms of RMSE and MAE.
 
+---
 
+## Environment Activation
 
-## Env Activation 
+To activate the virtual environment on Windows:
 
-```
+```bash
  .\venv\Scripts\activate  
 ```
